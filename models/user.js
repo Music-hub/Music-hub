@@ -1,10 +1,8 @@
 var singleton = require("../utils/singleton");
-var ChannelModelFactory = require("./channel");
 var Q = require('q');
 var FB = require('fb');
 
 var UserModelFactory = function (mongoose) {
-  var Channel = ChannelModelFactory(mongoose);
   
   var userSchema, User;
   var nooz = function () {}
