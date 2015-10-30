@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>HTML barebone</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="HTML barebone">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon">
+    <link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  </head>
+  <body>
+
+<pre id="user-data">
+  --
+</pre>
+
+<form id="change-setting" method="POST" action="/api/user/change-setting">
+  <input type="text" name="name"/>
+  <input type="submit" value="change setting"/>
+</form>
+
+
+
+<form id="email-auth" method="POST" action="/register/email">
+  <input type="text" name="email"/>
+  <input type="text" name="password"/>
+  <input type="submit" value="register-with-email"/>
+</form>
+<script type="text/javascript">
+  function some_popup_post(form) {
+    window.open('', 'formpopup', 'width=400,height=200,resizeable,scrollbars');
+    form.target = 'formpopup';
+  }
+  
+  function loginSuccessCallback(userData) {
+    $('#user-data').text(JSON.stringify(userData, 0, 4));
+  }
+  function loginErrorCallback(error) {
+    $('#user-data').text('failed to login with ' + error.authMethod + ' due to ' + error.errorMessage);
+  }
+  
+  $(function () {
+    $( "#change-setting" ).submit(function( event ) {
+      jQuery.post( '/api/user/change-setting', {
+        name: $('#change-setting input[name=name]').val(),
+      },function (data) {
+        if (data.error) alert('change-setting failed');
+        $("#user-data").text(JSON.stringify(data, 0, 4));
+      })
+      event.preventDefault();
+    });
+    $( "#email-auth-ajax" ).submit(function( event ) {
+      jQuery.post( '/auth/email/json', {
+        email: $('#email-auth-ajax input[name=email]').val(),
+        password: $('#email-auth-ajax input[name=password]').val(),
+      },function (data) {
+        if (data.error) return loginErrorCallback(data.error)
+        $("#user-data").text(JSON.stringify(data.userInfo, 0, 4));
+      })
+      event.preventDefault();
+    });
+  })
+</script>
+<form id="email-auth" method="POST" action="/auth/email" onsubmit="some_popup_post(this);">
+  <input type="text" name="email"/>
+  <input type="text" name="password"/>
+  <input type="submit" value="sign-in-with-email"/>
+</form>
+<form id="email-auth-ajax" method="POST" action="/auth/email/json">
+  <input type="text" name="email"/>
+  <input type="text" name="password"/>
+  <input type="submit" value="sign-in-with-email (ajax)"/>
+</form>
+<button onclick=" window.open('/auth/facebook', 'Login...','width=400,height=200,resizeable,scrollbars');">auth with fb</button>
+<button onclick=" window.open('/auth/google', 'Login...','width=500,height=400,resizeable,scrollbars');">auth with google</button>
+  </body>
+</html>

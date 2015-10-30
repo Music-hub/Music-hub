@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>HTML barebone</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="HTML barebone">
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon">
+    <link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon">
+  </head>
+  <body>
+    now logining you in....
+    <script>
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.loginSuccessCallback(<%- JSON.stringify(userInfo) %>);
+        } catch (e) {
+          alert(e);
+        }
+      }
+      window.close();
+    </script>
+  </body>
+</html>
