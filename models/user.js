@@ -1,6 +1,6 @@
 var singleton = require("../utils/singleton");
 var Q = require('q');
-var FB = require('fb');
+//var FB = require('fb');
 
 var UserModelFactory = function (mongoose) {
   
@@ -9,14 +9,15 @@ var UserModelFactory = function (mongoose) {
   
   userSchema = new mongoose.Schema({
     name: { type: String, default: 'Anonymous' },
-    /*
-    email: { type: String, default: '' },
-    password: { type: String, default: '' },
-    facebook: { type: String, default: '' },
-    */
+    
+    //email: { type: String, default: '' },
+    //password: { type: String, default: '' },
+    //facebook: { type: String, default: '' },
+    
     anonymous: { type: Boolean, default: true },
-    channels: { type: [], default: [] },
-    sheets: { type: [], default: [] }
+    //channels: { type: [], default: [] },
+    sheets: { type: [], default: [] },
+    setting: {}
   });
   
   var normalizedPath = require("path").join(__dirname, "../auth");

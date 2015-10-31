@@ -10,16 +10,20 @@ var session = require('express-session');
 var flash = require('connect-flash');
 var passport = require('passport');
 var ejs = require('ejs');
+var nodemailer = require('nodemailer');
 var config = require('./config')
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/music-hub');
 
 var User = require("./models/user")(mongoose);
+var PendingEmail = require("./models/pending_email")(mongoose);
 
 var app = express();
 var server = http.createServer(app);
 var io = socketio.listen(server);
+
+app.on('error', console.error.bind(console))
 
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'views'));
@@ -52,6 +56,14 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
+var EmailSender = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: config.gmail.GMAIL_ACCOUNT,
+        pass: config.gmail.GMAIL_PASSWORD
+    }
+});
+
 
 var normalizedPath = require("path").join(__dirname, "./auth");
 
@@ -61,8 +73,7 @@ var strategys = require("fs").readdirSync(normalizedPath).map(function(file) {
 });
 
 var options = config.auth;
-
-console.log(options)
+//console.log(options)
 
 strategys.forEach(function (strategy) {
   var strategyInstance = strategy.strategieFactory(User, options[strategy.name]);
@@ -148,37 +159,125 @@ strategys.forEach(function (strategy) {
 app.post('/register/email', function (req, res, next) {
   var user,
     body = req.body,
-    email = body.email,
-    password =body.password
+    email = body.email/*,
+    password =body.password*/
   
   var sess = req.session;
-  if (!(email || password)) {
+  if (!(email)) {
     return res.end('error');
   }
-  
-  user = User.findOrCreate({_id: sess.userId}, function (err, userData) {
+  PendingEmail.findOrCreate({
+    email: email
+  }, function (err, pendingEmail) {
     if (err) {
-      res.json({
-        error: err
-      })
-    } else {
-      userData.authMethods.email.email = email;
-      userData.authMethods.email.password = password;
-      userData.anonymous = false;
-      userData.save(function (err, doc) {
-        if (err) {
-          return res.json({
-            error: err
-          })
-        }
-        res.json({
-          userInfo: doc.toObject()
-        });
+      return res.json({
+        error: err.toString()
       })
     }
-  });
-  
+    pendingEmail.refreshToken();
+    pendingEmail.pSave()
+    .then(function (pendingEmail) {
+      EmailSender.sendMail({
+        from: 'Music Hub <' + config.gmail.GMAIL_ACCOUNT + '>', // sender address
+        to: pendingEmail.email, // list of receivers
+        subject: '[Register] Music hub, the online music sheet service', // Subject line
+        text: config.siteBase + 'register/email/' + pendingEmail.token, // plaintext body
+        html: '<b>' + config.siteBase + 'register/email/' + pendingEmail.token + '</b>' // html body
+      }, function(err, info){
+        if(err){
+          return res.json({
+            error: err.toString()
+          })
+        }
+        return res.json({
+          info: info.toString()
+        })
+      });
+    })
+    .catch(function (err) {
+      return res.json({
+        error: err.toString()
+      })
+    })
+  })
 })
+app.get('/register/email/:token', function (req, res, next) {
+  var token = req.params.token;
+  
+  PendingEmail.findOne({
+    token: token
+  }, function (err, pendingEmail) {
+    if(err){
+      return res.json({
+        error: err.toString()
+      })
+    }
+    if(!pendingEmail){
+      return res.json({
+        error: 'invalid register link'
+      })
+    }
+    return res.json({
+      info: 'pending mail: ' + pendingEmail.email
+    })
+  })
+})
+
+app.post('/register/email/:token', function (req, res, next) {
+  var token = req.params.token;
+  var name = req.body.name;
+  var password = req.body.password;
+  
+  PendingEmail.findOne({
+    token: token
+  }, function (err, pendingEmail) {
+    if(err){
+      return res.json({
+        error: err.toString()
+      })
+    }
+    if(!pendingEmail){
+      return res.json({
+        error: 'invalid register link'
+      })
+    }
+    
+    User.findOne( {
+      "authMethods.email.email": pendingEmail.email
+    }, function (err, user) {
+      if(err){
+        return res.json({
+          error: err.toString()
+        })
+      }
+      if(user){
+        return res.json({
+          error: 'already registered email'
+        })
+      }
+      
+      user = new User({
+        name: name,
+        "authMethods.email.email": pendingEmail.email,
+        "authMethods.email.password": password
+      });
+      
+      user.pSave()
+      .then(function (user) {
+        return res.json({
+          userInfo: user.toObject()
+        })
+      })
+      .catch(function (err) {
+        return res.json({
+          error: err.toString()
+        })
+      })
+      
+    })
+    
+  })
+});
 
 app.post('/api/user/change-setting', requireAuth, function (req, res, next) {
   var user;
@@ -190,7 +289,7 @@ app.post('/api/user/change-setting', requireAuth, function (req, res, next) {
     _id: sess.userId
   }, function (err, userData) {
     if (err) {
-      res.json({
+      return res.json({
         error: err.toString()
       })
     }

@@ -1,6 +1,11 @@
 var config = {
   ip: process.env.IP || "0.0.0.0",
   port: process.env.PORT || 3000,
+  siteBase: 'http://music-hub-backend-mmis1000.c9.io/',
+  gmail: {
+    GMAIL_ACCOUNT: process.env.GMAIL_ACCOUNT,
+    GMAIL_PASSWORD: process.env.GMAIL_PASSWORD
+  },
   auth: {
     facebook: {
       FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
