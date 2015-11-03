@@ -98,10 +98,14 @@
   <input type="submit" value="register-with-email callback"/>
 </form>
 
-<form id="email-auth" method="POST" action="/auth/email" onsubmit="some_popup_post(this);">
+<iframe name="hidden_iframe" src="about:blank"
+  style="height:1px; width:1px; opacity:0; position: absolute;"
+  ></iframe>
+
+<form id="email-auth" method="POST" action="/auth/email" target="hidden_iframe">
   <input type="text" name="email"/>
   <input type="text" name="password"/>
-  <input type="submit" value="sign-in-with-email (popup)"/>
+  <input type="submit" value="sign-in-with-email (iframe)"/>
 </form>
 
 <form id="email-auth-ajax" method="POST" action="/auth/email/json">
