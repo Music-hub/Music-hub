@@ -38,43 +38,54 @@
     form.target = 'formpopup';
   }
   
-  function loginSuccessCallback(userData) {
-    $('#user-data').text(JSON.stringify(userData, 0, 4));
-  }
-  function loginErrorCallback(error) {
-    $('#user-data').text('failed to login with ' + error.authMethod + ' due to ' + error.errorMessage);
+  window.onmessage = function onmessage (ev) {
+    console.log(ev);
+    
+    var event = ev.data;
+    switch (event.type) {
+      case "login_success":
+        $("#user-data").text(JSON.stringify(event.data, 0, 4));
+        break;
+      case "login_error":
+        $("#user-data").text(event.message);
+        break;
+    }
   }
   
   $(function () {
     $( "#change-setting" ).submit(function( event ) {
+      event.preventDefault();
+      
       jQuery.post( '/api/user/change-setting', {
         name: $('#change-setting input[name=name]').val(),
-      },function (data) {
-        if (data.error) alert('change-setting failed');
-        $("#user-data").text(JSON.stringify(data, 0, 4));
+      },function (event) {
+        if (event.type === "setting_error" || event.type === "auth_error") alert(event.message);
+        $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
-      event.preventDefault();
     });
     $( "#email-auth-ajax" ).submit(function( event ) {
+      event.preventDefault();
+      
       jQuery.post( '/auth/email/json', {
         email: $('#email-auth-ajax input[name=email]').val(),
         password: $('#email-auth-ajax input[name=password]').val(),
-      },function (data) {
-        if (data.error) return loginErrorCallback(data.error)
-        $("#user-data").text(JSON.stringify(data.userInfo, 0, 4));
+      },function (event) {
+        if (event.type === "login_error") return $("#user-data").text(event.message);
+        $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
-      event.preventDefault();
     });
     
     $( "#email-register-callback" ).submit(function( event ) {
+      event.preventDefault();
+      
+      if ($('#email-register-callback input[name=token]').val() === "") return;
       jQuery.post( '/register/email/' + $('#email-register-callback input[name=token]').val(), {
         name: $('#email-register-callback input[name=name]').val(),
         password: $('#email-register-callback input[name=password]').val(),
-      },function (data) {
-        if (data.error) return loginErrorCallback(data.error)
-        $("#user-data").text(JSON.stringify(data.userInfo, 0, 4));
+      },function (event) {
+        if (event.type === "register_error") return $("#user-data").text(event.message);
+        $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
-      event.preventDefault();
     });
   })
 </script>
