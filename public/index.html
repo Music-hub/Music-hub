@@ -42,11 +42,11 @@
     console.log(ev);
     
     var event = ev.data;
-    switch (event.type) {
-      case "login_success":
+    switch (event.level) {
+      case "success":
         $("#user-data").text(JSON.stringify(event.data, 0, 4));
         break;
-      case "login_error":
+      case "error":
         $("#user-data").text(event.message);
         break;
     }
@@ -59,7 +59,7 @@
       jQuery.post( '/setting/update', {
         name: $('#change-setting input[name=name]').val(),
       },function (event) {
-        if (event.type === "setting_error" || event.type === "auth_error") alert(event.message);
+        if (event.level === "error") alert(event.message);
         $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
     });
@@ -70,7 +70,7 @@
         email: $('#email-auth-ajax input[name=email]').val(),
         password: $('#email-auth-ajax input[name=password]').val(),
       },function (event) {
-        if (event.type === "login_error") return $("#user-data").text(event.message);
+        if (event.level === "error") return $("#user-data").text(event.message);
         $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
     });
@@ -83,12 +83,12 @@
         name: $('#email-register-callback input[name=name]').val(),
         password: $('#email-register-callback input[name=password]').val(),
       },function (event) {
-        if (event.type === "register_error") return $("#user-data").text(event.message);
+        if (event.level === "error") return $("#user-data").text(event.message);
         $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
     });
     jQuery.get( 'setting/get', function (event) {
-      if (event.type.match(/error/)) return $("#user-data").text(event.message);
+      if (event.level === "error") return $("#user-data").text(event.message);
       $("#user-data").text(JSON.stringify(event.data, 0, 4));
     })
   })
