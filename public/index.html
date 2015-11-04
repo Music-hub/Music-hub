@@ -18,7 +18,7 @@
   --
 </pre>
 
-<form id="change-setting" method="POST" action="/api/user/change-setting">
+<form id="change-setting" method="POST" action="/settting/update">
   <input type="text" name="name"/>
   <input type="submit" value="change setting"/>
 </form>
@@ -56,7 +56,7 @@
     $( "#change-setting" ).submit(function( event ) {
       event.preventDefault();
       
-      jQuery.post( '/api/user/change-setting', {
+      jQuery.post( '/setting/update', {
         name: $('#change-setting input[name=name]').val(),
       },function (event) {
         if (event.type === "setting_error" || event.type === "auth_error") alert(event.message);
@@ -87,6 +87,10 @@
         $("#user-data").text(JSON.stringify(event.data, 0, 4));
       })
     });
+    jQuery.get( 'setting/get', function (event) {
+      if (event.type.match(/error/)) return $("#user-data").text(event.message);
+      $("#user-data").text(JSON.stringify(event.data, 0, 4));
+    })
   })
 </script>
 

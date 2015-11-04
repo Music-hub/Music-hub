@@ -8,6 +8,8 @@ var User = require("../models/user")(mongoose);
 var RegisterError = require("../events/register_error");
 var RegisterInfo = require("../events/register_info");
 var RegisterSuccess = require("../events/register_success");
+var DatabaseError = require("../events/database_error");
+
 function setup (app ,config, service) {
   var EmailSender = service.EmailSender;
   
@@ -24,7 +26,7 @@ function setup (app ,config, service) {
       email: email
     }, function (err, pendingEmail) {
       
-      if (err) return res.json(new RegisterError('email', null, err.toString()));
+      if (err) return res.json(new DatabaseError('email', null, err.toString()));
       
       pendingEmail.refreshToken();
       pendingEmail.pSave()
@@ -53,7 +55,7 @@ function setup (app ,config, service) {
     PendingEmail.findOne({
       token: token
     }, function (err, pendingEmail) {
-      if (err) return res.json(new RegisterError('email', null, err.toString()));
+      if (err) return res.json(new DatabaseError('email', null, err.toString()));
       if(!pendingEmail){
         return res.json(new RegisterError('email', null, "invalid register link"))
       }
@@ -73,7 +75,7 @@ function setup (app ,config, service) {
     PendingEmail.findOne({
       token: token
     }, function (err, pendingEmail) {
-      if (err) return res.json(new RegisterError('email', null, err.toString()));
+      if (err) return res.json(new DatabaseError('email', null, err.toString()));
       if(!pendingEmail){
         return res.json(new RegisterError('email', null, "invalid register link"))
       }
@@ -81,7 +83,7 @@ function setup (app ,config, service) {
       User.findOne( {
         "authMethods.email.email": pendingEmail.email
       }, function (err, user) {
-        if (err) return res.json(new RegisterError('email', null, err.toString()));
+        if (err) return res.json(new DatabaseError('email', null, err.toString()));
         
         if(user){
           return res.json(new RegisterError('email', null, 'already registered email'));
@@ -89,6 +91,7 @@ function setup (app ,config, service) {
         
         user = new User({
           name: name,
+          anonymous: false,
           "authMethods.email.email": pendingEmail.email,
           "authMethods.email.password": password
         });
@@ -98,7 +101,7 @@ function setup (app ,config, service) {
           return res.json(new RegisterSuccess('email', user.toObject(), null));
         })
         .catch(function (err) {
-          return res.json(new RegisterError('email', null, err.toString()));
+          return res.json(new DatabaseError('email', null, err.toString()));
         })
         
       })

@@ -63,51 +63,11 @@ var service = {
 
 var authRouteSetup = require("./routes/auth");
 var registerRouteSetup = require("./routes/register");
+var settingRouterSetup = require("./routes/setting");
 
 authRouteSetup(app, config, service);
 registerRouteSetup(app, config, service);
-
-function requireAuth (req, res, next) {
-  var sess = req.session;
-  User.findOrCreate({
-    _id: sess.userId
-  }, function (err, userData) {
-    console.log('test', userData);
-    if (err) {
-      res.json({
-        error: err
-      })
-      return;
-    }
-    if (userData.anonymous) {
-      res.json(new AuthError(null, null, 'not logged in'));
-      return;
-    }
-    next();
-  })
-}
-  
-app.post('/api/user/change-setting', requireAuth, function (req, res, next) {
-  var user;
-  var fields = ['name'];
-  var updates = {};
-  var sess = req.session;
-  console.log(sess);
-  user = User.findOrCreate({
-    _id: sess.userId
-  }, function (err, userData) {
-    if (err) return res.json(new SettingError(null, null, err.toString()));
-    
-    fields.forEach(function (name) {
-      if (req.body[name])
-        userData[name] = req.body[name]
-    })
-    userData.save(function (err, userData) {
-      if (err) return res.json(new SettingError(null, null, err.toString()));
-      res.json(new SettingSuccess(null, userData.toObject(), null));
-    })
-  })
-})
+settingRouterSetup(app, config, service);
 
 app.use(express.static(path.resolve(__dirname, 'public')));
 
