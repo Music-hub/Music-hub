@@ -62,6 +62,13 @@ var UserModelFactory = function (mongoose) {
     return deferred.promise;
   }
   
+  
+  userSchema.methods.toClientObject = function toClientObject() {
+    var obj = this.toObject();
+    delete obj.authMethods;
+    return obj;
+  }
+  
   User = mongoose.model('User', userSchema);
   
   return User;

@@ -32,7 +32,7 @@ function setup(app, config, service) {
       _id: sess.userId
     }, function (err, userData) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
-      res.json(new SettingInfo(null, userData.toObject(), null));
+      res.json(new SettingInfo(null, userData.toClientObject(), null));
     });
   })
   
@@ -53,7 +53,7 @@ function setup(app, config, service) {
       })
       userData.save(function (err, userData) {
         if (err) return res.json(new DatabaseError(null, null, err.toString()));
-        res.json(new SettingSuccess(null, userData.toObject(), null));
+        res.json(new SettingSuccess(null, userData.toClientObject(), null));
       })
     })
   })

@@ -72,7 +72,7 @@ function setup(app, config, service) {
         console.log(sess, user._id.toString())
         sess.userId = user._id.toString();
         res.render('auth_callback', {
-          event: new LoginSuccess(strategy.name, user.toObject(), null)
+          event: new LoginSuccess(strategy.name, user.toClientObject(), null)
         });
       }, 
       function (req, res, next, err, user, info) {
@@ -87,7 +87,7 @@ function setup(app, config, service) {
         var sess = req.session;
         console.log(sess, user._id.toString())
         sess.userId = user._id.toString();
-        res.json(new LoginSuccess(strategy.name, user.toObject(), null));
+        res.json(new LoginSuccess(strategy.name, user.toClientObject(), null));
       }
     );
   })

@@ -98,7 +98,7 @@ function setup (app ,config, service) {
         
         user.pSave()
         .then(function (user) {
-          return res.json(new RegisterSuccess('email', user.toObject(), null));
+          return res.json(new RegisterSuccess('email', user.toClientObject(), null));
         })
         .catch(function (err) {
           return res.json(new DatabaseError('email', null, err.toString()));
