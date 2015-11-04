@@ -2,7 +2,10 @@ function RegisterSuccess (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "register_success";
+  //this.type = "register_success";
+  
+  this.type = "register";
+  this.level = "success";
 }
 RegisterSuccess.prototype.toString = function toString () {
   if (!this.message)

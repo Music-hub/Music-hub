@@ -2,7 +2,10 @@ function AuthError (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "auth_error";
+  //this.type = "auth_error";
+  
+  this.type = "auth";
+  this.level = "error";
 }
 AuthError.prototype.toString = function toString () {
   if (!this.message)

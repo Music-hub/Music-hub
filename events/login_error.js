@@ -2,7 +2,11 @@ function LoginError (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "login_error";
+  //this.type = "login_error";
+  
+  
+  this.type = "login";
+  this.level = "error";
 }
 LoginError.prototype.toString = function toString () {
   if (!this.message)

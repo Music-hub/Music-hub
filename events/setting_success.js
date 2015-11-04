@@ -2,7 +2,10 @@ function SettingSuccess (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "setting_success";
+  //this.type = "setting_success";
+  
+  this.type = "setting";
+  this.level = "success";
 }
 SettingSuccess.prototype.toString = function toString () {
   if (!this.message)

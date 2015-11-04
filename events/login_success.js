@@ -2,7 +2,10 @@ function LoginSuccess (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "login_success";
+  //this.type = "login_success";
+  
+  this.type = "login";
+  this.level = "success";
 }
 LoginSuccess.prototype.toString = function toString () {
   if (!this.message)

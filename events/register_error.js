@@ -2,7 +2,11 @@ function RegisterError (method, data, message) {
   this.message = message;
   this.data = data;
   this.method = method;
-  this.type = "register_error";
+  
+  //this.type = "register_error";
+  this.type = "register";
+  this.level = "error";
+  
 }
 RegisterError.prototype.toString = function toString () {
   if (!this.message)
