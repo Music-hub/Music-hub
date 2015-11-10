@@ -14,7 +14,7 @@ var nodemailer = require('nodemailer');
 var config = require('./config')
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/music-hub');
+mongoose.connect(config.mongodbPath);
 
 // Load Events
 var AuthError = require("./events/auth_error");
@@ -30,6 +30,9 @@ var server = http.createServer(app);
 var io = socketio.listen(server);
 
 server.on('error', console.error.bind(console));
+app.on('error', console.error.bind(console));
+io.on('error', console.error.bind(console));
+
 
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'views'));
