@@ -119,5 +119,20 @@
 </form>
 <button onclick=" window.open('/auth/facebook', 'Login...','width=400,height=200,resizeable,scrollbars');">auth with fb (popup)</button>
 <button onclick=" window.open('/auth/google', 'Login...','width=500,height=400,resizeable,scrollbars');">auth with google (popup)</button>
+
+
+<form id="email-auth" method="POST" action="api/sheet/create">
+  <input type="text" name="name"/>
+  <input type="text" name="data"/>
+  <input type="submit" value="create sheet"/>
+</form>
+
+<form id="email-auth" method="POST" action="api/sheet/update/">
+  <input type="text" name="id"/>
+  <input type="text" name="message"/>
+  <input type="text" name="data"/>
+  <input type="submit" value="update sheet"/>
+</form>
+
   </body>
 </html>

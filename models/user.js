@@ -16,7 +16,7 @@ var UserModelFactory = function (mongoose) {
     
     anonymous: { type: Boolean, default: true },
     //channels: { type: [], default: [] },
-    sheets: { type: [], default: [] },
+    sheets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sheet' }],
     setting: {}
   });
   

@@ -1,6 +1,7 @@
 var http = require('http');
 var path = require('path');
 
+var q = require('q')
 var socketio = require('socket.io');
 var express = require('express');
 var morgan = require('morgan');
@@ -14,6 +15,8 @@ var nodemailer = require('nodemailer');
 var config = require('./config')
 
 var mongoose = require('mongoose');
+mongoose.Promise = q.Promise;
+
 mongoose.connect(config.mongodbPath);
 
 // Load Events
@@ -32,7 +35,6 @@ var io = socketio.listen(server);
 server.on('error', console.error.bind(console));
 app.on('error', console.error.bind(console));
 io.on('error', console.error.bind(console));
-
 
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'views'));
@@ -67,10 +69,12 @@ var service = {
 var authRouteSetup = require("./routes/auth");
 var registerRouteSetup = require("./routes/register");
 var settingRouterSetup = require("./routes/setting");
+var sheetRouterSetup = require("./routes/sheet");
 
 authRouteSetup(app, config, service);
 registerRouteSetup(app, config, service);
 settingRouterSetup(app, config, service);
+sheetRouterSetup(app, config, service);
 
 app.use(express.static(path.resolve(__dirname, 'public')));
 
