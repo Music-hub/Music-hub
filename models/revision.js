@@ -29,7 +29,7 @@ var RevisionModelFactory = function (mongoose) {
     return new Revision({
       sheet: sheet || this.sheet,
       data: this.data,
-      comment: {message: "clone of revision " + this._id.toString(), by: user ? null : user.name}
+      comment: {message: "clone of revision " + this._id.toString(), by: user ? user.name : null}
     })
   }
   
