@@ -1,5 +1,8 @@
 var passport = require('passport')
+  , crypto = require('crypto')
   , LocalStrategy = require('passport-local').Strategy;
+
+var salt = null;
 
 var emailAuth = {
   name: 'email',
@@ -8,7 +11,16 @@ var emailAuth = {
     email: { type: String, default: '' },
     password: { type: String, default: '' }
   },
+  methods: {
+    setEmailPassword: function setPassword(password) {
+      this.authMethods.email.password = crypto.pbkdf2Sync(password, salt, 4096, 64);
+    },
+    checkEmailPassword: function checkPassword(password){
+      return this.authMethods.email.password == crypto.pbkdf2Sync(password, salt, 4096, 64);
+    }
+  },
   strategieFactory: function (User, options) {
+    salt = options.salt;
     return new LocalStrategy({
       usernameField: 'email',
       passwordField: 'password'
@@ -19,7 +31,7 @@ var emailAuth = {
         if (!user) {
           return done(null, false, { message: 'Incorrect email.' });
         }
-        if (user.authMethods.email.password !== password) {
+        if (!user.checkEmailPassword(password)) {
           return done(null, false, { message: 'Incorrect password.' });
         }
         return done(null, user);

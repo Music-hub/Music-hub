@@ -92,9 +92,9 @@ function setup (app ,config, service) {
         user = new User({
           name: name,
           anonymous: false,
-          "authMethods.email.email": pendingEmail.email,
-          "authMethods.email.password": password
+          "authMethods.email.email": pendingEmail.email
         });
+        user.setEmailPassword(password);
         
         user.pSave()
         .then(function (user) {
