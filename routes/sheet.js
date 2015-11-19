@@ -41,7 +41,7 @@ function setup(app, config, service) {
   }
   
   var getSheetJSON = getModelWithIdJSONFactory(Sheet, "currentSheet", function (req, res, next) {
-    return req.params.sheetId;
+    return req.params.sheetId || req.body.sheetId;
   })
   app.post('/api/sheet/create', getUserJSON, function (req, res, next) {
   
@@ -102,6 +102,7 @@ function setup(app, config, service) {
         var opts = [
           {path:"owners", select: 'name'},
           {path:"collaborators", select: 'name'},
+          {path:"revisions", select: 'comment'},
           {path:"chatChannel", select: 'name'}
         ];
         return Sheet.populate(sheet, opts);
@@ -125,7 +126,8 @@ function setup(app, config, service) {
     var opts = [
       {path:"owners", select: 'name'},
       {path:"collaborators", select: 'name'},
-      {path:"chatChannel", select: 'name'}
+      {path:"chatChannel", select: 'name'},
+      {path:"revisions", select: 'comment'}
     ];
     Sheet.populate(req.currentSheet, opts, function (err, doc) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
@@ -134,7 +136,7 @@ function setup(app, config, service) {
     })
   })
   
-  function sheetUpdate(req, res, next) {
+  /*function sheetUpdate(req, res, next) {
     
     var id = req.params.id || req.body.id;
     
@@ -174,7 +176,33 @@ function setup(app, config, service) {
   }
   
   app.post('/api/sheet/update/:id/', getUserJSON, sheetUpdate)
-  app.post('/api/sheet/update/', getUserJSON, sheetUpdate)
+  app.post('/api/sheet/update/', getUserJSON, sheetUpdate)*/
+  
+  app.post('/api/sheet/update/:sheetId', getUserJSON, getSheetJSON, function(req, res, next) {
+    
+    try {
+      if ("string" === typeof req.body.data) {
+        req.body.data = JSON.parse(req.body.data);
+      }
+    } catch (err) {
+      return res.json(new ParseError(null, null, err.toString()))
+    }
+    
+    Sheet.populate(req.currentSheet, {path:"revisions"}, function (err, sheet) {
+      if (err) return res.json(new DatabaseError(null, null, err.toString()));
+      
+      var latestRevision = sheet.revisions[sheet.revisions.length - 1];
+      latestRevision.data = req.body.data;
+      
+      latestRevision.save()
+      .then(function (revision) {
+        res.json(new RevisionSuccess(null, revision, "revisioned successful"));
+      })
+      .catch(function (err) {
+        res.json(new DatabaseError(null, null, err.toString()));
+      })
+    });
+  })
   
   app.post('/api/sheet/reverse/:sheetId/', getUserJSON, getSheetJSON, function(req, res, next) {
     if(!req.currentSheet) return res.json(new SheetError(null, null, "no such sheet"));
@@ -211,14 +239,20 @@ function setup(app, config, service) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
       var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser);
       sheet.revisions.push(newRevision);
+      console.log(newRevision.comment.by)
       newRevision.save()
       .then(function () {
         return sheet.save();
       })
       .then(function () {
         var newSheet = sheet.toObject();
-        
-        res.json(new SheetSuccess(null, sheet));
+        newSheet.revisions = newSheet.revisions.map(function (obj) {
+          return {
+            _id: obj._id,
+            comment: obj.comment
+          }
+        })
+        res.json(new SheetSuccess(null, newSheet));
       })
       .catch(function (err) {
         res.json(new DatabaseError(null, null, err.toString()));
