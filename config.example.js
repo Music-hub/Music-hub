@@ -8,6 +8,9 @@ var config = {
     GMAIL_PASSWORD: process.env.GMAIL_PASSWORD
   },
   auth: {
+    email: {
+      salt: "music-hub"
+    },
     facebook: {
       FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
       FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
