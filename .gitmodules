@@ -1,6 +1,3 @@
-[submodule "public/editor"]
-	path = public/editor
-	url = https://github.com/Music-hub/sususu
 [submodule "components/editor"]
 	path = components/editor
 	url = https://github.com/Music-hub/sususu
