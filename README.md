@@ -10,7 +10,8 @@ Before Install, you need to satisfy the following prerequirement
 2. Install `Mongodb` or use existed one, you could find it here [Mongodb](https://www.mongodb.org/)
 3. Follow this [section](https://github.com/mongodb/node-mongodb-native#troubleshooting), make sure you satisfied the requirement to install `node-mongodb-native`
 4. Install `Bower`, you could find it here [Bower](http://bower.io/).
-5. If on windows, configure the `PATH` to make the terminal could find `node` and `npm` and `bower` (the installer should do this for you)
+5. install `git`, if your computer doesn't have it installed.
+6. If on windows, configure the `PATH` to make the terminal could find `git`, `node`, `npm` and `bower` (the installer should do this for you)
 
 To Install
 
