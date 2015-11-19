@@ -32,7 +32,10 @@ function setup(app, config, service) {
       _id: sess.userId
     }, function (err, userData) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
-      res.json(new SettingInfo(null, userData.toClientObject(), null));
+      User.populate(userData, {path: "sheets", select: "name"}, function (err, user) {
+        if (err)  return res.json(new DatabaseError(null, null, err.toString()));
+        res.json(new SettingInfo(null, user.toClientObject(), null));
+      })
     });
   })
   
