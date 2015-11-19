@@ -29,6 +29,11 @@ var UserModelFactory = function (mongoose) {
   var authMethods = {};
   strategys.forEach(function (strategy) {
     authMethods[strategy.name] = strategy.dataSchema
+    if (strategy.methods) {
+      for (var i in strategy.methods) {
+        userSchema.methods[i] = strategy.methods[i];
+      }
+    }
   })
   userSchema.add({
     authMethods: authMethods
