@@ -10,7 +10,7 @@ var RegisterInfo = require("../events/register_info");
 var RegisterSuccess = require("../events/register_success");
 var DatabaseError = require("../events/database_error");
 
-function setup (app ,config, service) {
+function setup (app ,config, service, io) {
   var EmailSender = service.EmailSender;
   
   app.post('/register/email', function (req, res, next) {

@@ -8,7 +8,7 @@ var LoginSuccess = require("../events/login_success");
 // Load models
 var User = require("../models/user")(mongoose);
 
-function setup(app, config, service) {
+function setup(app, config, service, io) {
     
   app.use(passport.initialize());
   app.use(passport.session());
@@ -39,11 +39,12 @@ function setup(app, config, service) {
   
   strategys.forEach(function (strategy) {
     var strategyInstance = strategy.strategieFactory(User, options[strategy.name]);
-    console.log(strategyInstance, 'test');
+    // console.log(strategyInstance, 'test');
     passport.use(strategyInstance);
   });
   
   app.use(function (req, res, next) {
+    console.log('session id in express is...' + req.sessionID);
     var sess = req.session;
     if (!sess.userId) {
       sess.userId = (new mongoose.Types.ObjectId).toString();

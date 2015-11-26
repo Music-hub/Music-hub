@@ -8,7 +8,7 @@ var SettingSuccess = require("../events/setting_success");
 var DatabaseError = require("../events/database_error");
 
 
-function setup(app, config, service) {
+function setup(app, config, service, io) {
   
   function requireAuth (req, res, next) {
     var sess = req.session;

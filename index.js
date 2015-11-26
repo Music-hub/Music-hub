@@ -45,7 +45,9 @@ app.use(bodyParser.urlencoded({
   extended: true
 }))
 app.use(flash());
+var sessionStore = new session.MemoryStore();
 var sess = {
+  store: sessionStore,
   secret: 'keyboard cat',
   cookie: {}
 }
@@ -53,7 +55,8 @@ if (app.get('env') === 'production') {
   app.set('trust proxy', 1) // trust first proxy
   sess.cookie.secure = true // serve secure cookies
 }
-app.use(session(sess))
+var sessionMiddleware = session(sess);
+app.use(sessionMiddleware);
 
 
 var service = {
@@ -63,7 +66,9 @@ var service = {
           user: config.gmail.GMAIL_ACCOUNT,
           pass: config.gmail.GMAIL_PASSWORD
       }
-  })
+  }),
+  sessionMiddleware: sessionMiddleware,
+  sessionStore:　sessionStore
 }
 
 var authRouteSetup = require("./routes/auth");
@@ -71,11 +76,13 @@ var registerRouteSetup = require("./routes/register");
 var settingRouterSetup = require("./routes/setting");
 var sheetRouterSetup = require("./routes/sheet");
 
-authRouteSetup(app, config, service);
-registerRouteSetup(app, config, service);
-settingRouterSetup(app, config, service);
-sheetRouterSetup(app, config, service);
+authRouteSetup(app, config, service, io);
+registerRouteSetup(app, config, service, io);
+settingRouterSetup(app, config, service, io);
+sheetRouterSetup(app, config, service, io);
 
+app.use('/editor', express.static(path.resolve(__dirname, 'components/editor')));
+app.use('/editor/:id', express.static(path.resolve(__dirname, 'components/editor')));
 app.use(express.static(path.resolve(__dirname, 'public')));
 
 server.listen(config.port, config.ip, function(){

@@ -15,7 +15,7 @@ var RevisionError = require("../events/revision_error");
 var RevisionInfo = require("../events/revision_info");
 var RevisionSuccess = require("../events/revision_success");
 
-function setup(app, config, service) {
+function setup(app, config, service, io) {
   function getUserJSON (req, res, next) {
     var sess = req.session;
     User.findOrCreate({
@@ -268,6 +268,34 @@ function setup(app, config, service) {
     })
   })
   
+  var sio = io.of('/sheet');
+  
+  sio.use(function(socket, next) {
+    service.sessionMiddleware(socket.request, socket.request.res, next);
+  });
+
+  sio.on('connection', function (socket) {
+    var session = socket.request.session;
+    
+    function reloadSession (cb) {
+      session.reload(function (err) {
+        if (err) return cb(err);
+        session = socket.request.session;
+        cb(null, session);
+      })
+    }
+    
+    console.log('session id in sio is...' + socket.request.sessionID);
+    console.log(session);
+    socket.on('ping', function () {
+      reloadSession(function () {
+        socket.emit('pong', session);
+      })
+    })
+    socket.on('join', function (roomId) {
+      socket.join(roomId);
+    })
+  })
 }
 
 module.exports = setup;

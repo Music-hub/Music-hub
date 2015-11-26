@@ -134,5 +134,19 @@
   <input type="submit" value="update sheet"/>
 </form>
 
+<pre id="socket"></pre>
+<button id="test-socket">test socket io</button>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io('/sheet');
+  socket.emit('ping');
+  socket.on('pong', function (sess) {
+    console.log(sess);
+    $("#socket").text(JSON.stringify(sess, null, 4));
+  });
+  $("#test-socket").click(function () {
+    socket.emit('ping');
+  })
+</script>
   </body>
 </html>
