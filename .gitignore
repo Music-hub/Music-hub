@@ -32,3 +32,7 @@ config.js
 data
 
 # components
+
+# local test db related file
+mongod
+mongod.repair
