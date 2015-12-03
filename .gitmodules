@@ -1,3 +1,6 @@
 [submodule "components/editor"]
 	path = components/editor
 	url = https://github.com/Music-hub/sususu
+[submodule "components/profile"]
+	path = components/profile
+	url = https://github.com/Music-hub/weiyee.git

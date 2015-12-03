@@ -14,6 +14,7 @@ var SheetError = require("../events/sheet_error");
 var RevisionError = require("../events/revision_error");
 var RevisionInfo = require("../events/revision_info");
 var RevisionSuccess = require("../events/revision_success");
+var assert = require('assert');
 
 function setup(app, config, service, io) {
   function getUserJSON (req, res, next) {
@@ -268,6 +269,50 @@ function setup(app, config, service, io) {
     })
   })
   
+  app.get('/api/sheet/clone/:sheetId', getUserJSON, getSheetJSON, function(req, res, next) {
+    if(!req.currentSheet) return res.json(new SheetError(null, null, "no such sheet"));
+    Sheet.populate(req.currentSheet, {path:"revisions"}, function(err, sheet) {
+      if (err) return res.json(new DatabaseError(null, null, err.toString()));
+      var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser);
+      
+      var oldSheet = sheet;
+      
+      var chatChannel = new ChatChannel({
+        users: [req.currentUser],
+        sheet: null
+      });
+      var sheet = new Sheet({
+        name: oldSheet.name,
+        owners: [req.currentUser],
+        chatChannel: chatChannel._id,
+        revisions: oldSheet.revisions.map(function (revision) {
+          return revision._id;
+        }).slice(0, oldSheet.revisions.length - 1).concat(newRevision._id)
+      })
+      chatChannel.sheet = sheet._id;
+      
+      newRevision.save()
+      .then(function () {
+        return sheet.save();
+      })
+      .then(function () {
+        return chatChannel.save();
+      })
+      .then(function () {
+        req.currentUser.sheets.push(sheet._id);
+        console.log(req.currentUser.sheets, sheet._id);
+        return req.currentUser.save();
+      })
+      .then(function () {
+        res.json(new SheetSuccess(null, sheet));
+      })
+      .catch(function (err) {
+        res.json(new DatabaseError(null, null, err.toString()));
+      })
+      
+    })
+  })
+  
   var sio = io.of('/sheet');
   
   sio.use(function(socket, next) {
@@ -285,16 +330,61 @@ function setup(app, config, service, io) {
       })
     }
     
+    function findLatestRevision (sheetId) {
+      return Sheet.findById(sheetId).exec()
+      .then (function (sheet) {
+        if (sheet) {
+          return Revision.findById(sheet.revisions[sheet.revisions.length - 1]).exec();
+        } else {
+          throw new Error('no sheet found')
+        }
+      })
+    }
+    
     console.log('session id in sio is...' + socket.request.sessionID);
-    console.log(session);
+    // console.log(session);
     socket.on('ping', function () {
       reloadSession(function () {
         socket.emit('pong', session);
       })
     })
     socket.on('join', function (roomId) {
-      socket.join(roomId);
+      reloadSession(function () {
+        console.log('user id ' + session.userId + 'is connected to ' + roomId)
+        socket.sheetId = roomId;
+        socket.join(roomId);
+      })
     })
+    
+    socket.on('layout_update', function (sheet) {
+      console.log('layout_update ' + socket.sheetId);
+      sio.to(socket.sheetId).emit('layout_update', sheet);
+    })
+    socket.on('measure_update', function (index, measure) {
+      var revisionId;
+      console.log('measure_update ' + socket.sheetId);
+      findLatestRevision(socket.sheetId)
+      .then (function (revision) {
+        revisionId = revision._id;
+        var update = {};
+        update['data.tracks.' + index[0] + '.measures.' + index[1]] = measure;
+        return Revision.update({_id: revision._id}, update).exec();
+      })
+      .then (function (revision) {
+        console.log('sheet ' + socket.sheetId + ' partial update successed')
+        console.log('revision id is' + revisionId.toString());
+      })
+      .catch(function (err) {
+        console.error(err);
+        console.error(err.stack);
+      })
+      sio.to(socket.sheetId).emit('measure_update', index, measure);
+    })
+    socket.on('meta_update', function (index, info) {
+      console.log('meta_update ' + socket.sheetId);
+      sio.to(socket.sheetId).emit('meta_update', index, info);
+    })
+    
   })
 }
 
