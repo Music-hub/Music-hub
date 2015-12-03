@@ -81,6 +81,7 @@ registerRouteSetup(app, config, service, io);
 settingRouterSetup(app, config, service, io);
 sheetRouterSetup(app, config, service, io);
 
+app.use('/', express.static(path.resolve(__dirname, 'components/profile')));
 app.use('/editor', express.static(path.resolve(__dirname, 'components/editor')));
 app.use('/editor/:id', express.static(path.resolve(__dirname, 'components/editor')));
 app.use(express.static(path.resolve(__dirname, 'public')));
