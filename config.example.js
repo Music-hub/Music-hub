@@ -3,6 +3,7 @@ var config = {
   port: process.env.PORT || 3000,
   siteBase: 'http://music-hub-backend-mmis1000.c9.io/',
   mongodbPath: "mongodb://localhost/music-hub",
+  GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
   gmail: {
     GMAIL_ACCOUNT: process.env.GMAIL_ACCOUNT,
     GMAIL_PASSWORD: process.env.GMAIL_PASSWORD

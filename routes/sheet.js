@@ -133,7 +133,24 @@ function setup(app, config, service, io) {
     Sheet.populate(req.currentSheet, opts, function (err, doc) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
       if (!doc) return res.json(new SheetError(null, null, "no such sheet"));
-      res.json(new SheetInfo(null, doc));
+      if (!doc.shortLink && service.URLShortener) {
+        var fullLink = config.siteBase + 'editor/' + doc._id.toString()
+        service.URLShortener.shorten(fullLink)
+        .then(function (shortUrl) {
+          console.log('created short link ' + shortUrl + ' for link ' + fullLink);
+          doc.shortLink = shortUrl;
+          return doc.save();
+        })
+        .then(function (doc) {
+          res.json(new SheetInfo(null, doc));
+        })
+        .catch(function (err) {
+          console.error(err.stack ? err.stack : err.toString());
+          res.json(new SheetInfo(null, doc));
+        });
+      } else {
+        res.json(new SheetInfo(null, doc));
+      }
     })
   })
   

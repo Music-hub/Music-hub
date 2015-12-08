@@ -36,6 +36,13 @@ server.on('error', console.error.bind(console));
 app.on('error', console.error.bind(console));
 io.on('error', console.error.bind(console));
 
+app.use(function (req, res, next) {
+  req.on('error', function (err) {
+    console.error('socket error: \r\n' + err.stack ? err.stack : err.toString());
+  })
+  next();
+})
+
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'views'));
 
@@ -67,6 +74,13 @@ var service = {
           pass: config.gmail.GMAIL_PASSWORD
       }
   }),
+  URLShortener: (function () {
+    if (config.GOOGLE_API_KEY) {
+      var googl = require('goo.gl');
+      googl.setKey(config.GOOGLE_API_KEY);
+      return googl;
+    }
+  } ()),
   sessionMiddleware: sessionMiddleware,
   sessionStore:　sessionStore
 }
