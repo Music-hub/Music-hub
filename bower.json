@@ -20,6 +20,7 @@
   "dependencies": {
     "jquery": "~2.1.4",
     "vexflow": "~1.2.36",
-    "eventEmitter": "~4.3.0"
+    "eventEmitter": "~4.3.0",
+    "qrcode.js": "qrcode-js#*"
   }
 }
