@@ -374,7 +374,23 @@ function setup(app, config, service, io) {
     })
     
     socket.on('layout_update', function (sheet) {
+      var revisionId;
       console.log('layout_update ' + socket.sheetId);
+      findLatestRevision(socket.sheetId)
+      .then (function (revision) {
+        revisionId = revision._id;
+        var update = {};
+        update.data = sheet;
+        return Revision.update({_id: revision._id}, update).exec();
+      })
+      .then (function (revision) {
+        console.log('sheet ' + socket.sheetId + ' full update successed')
+        console.log('revision id is' + revisionId.toString());
+      })
+      .catch(function (err) {
+        console.error(err);
+        console.error(err.stack);
+      })
       sio.to(socket.sheetId).emit('layout_update', sheet);
     })
     socket.on('measure_update', function (index, measure) {
