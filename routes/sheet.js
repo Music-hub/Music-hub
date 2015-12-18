@@ -1,3 +1,10 @@
+/*
+ * RealTime events:
+ *   sheet_info_update
+ *   measure_ujpdate
+ *   layout_update
+ *   meta_update
+ */
 var mongoose = require('mongoose');
 var User = require("../models/user")(mongoose);
 var Sheet = require("../models/sheet")(mongoose);
@@ -224,7 +231,46 @@ function setup(app, config, service, io) {
   
   app.post('/api/sheet/reverse/:sheetId/', getUserJSON, getSheetJSON, function(req, res, next) {
     if(!req.currentSheet) return res.json(new SheetError(null, null, "no such sheet"));
-    
+    Sheet.populate(req.currentSheet, {path:"revisions"}, function(err, sheet) {
+      var revisionId = req.body.revision;
+      var sheetIndex = -1;
+      var i;
+      for (i = 0; i < sheet.revisions.length; i++) {
+        if (sheet.revisions[i]._id.toString() === revisionId) {
+          sheetIndex = i;
+          break;
+        }
+      }
+      
+      if (sheetIndex < 0) return res.json(new SheetError(null, null, "no such revision"));
+      var newRevision = sheet.revisions[sheetIndex].clone(req.currentUser);
+      sheet.revisions.push(newRevision);
+      
+      newRevision.save()
+      .then(function () {
+        return sheet.save();
+      })
+      .then(function () {
+        res.json(new SheetSuccess(null, sheet));
+        
+        var newSheet = sheet.toObject();
+        newSheet.revisions = newSheet.revisions.map(function (obj) {
+          return {
+            _id: obj._id,
+            comment: obj.comment
+          }
+        })
+        
+        console.log('reversed sheet ' + newSheet._id.toString() + ' to revision ' + newRevision._id.toString());
+        sio.to(newSheet._id.toString()).emit('layout_update', newRevision.data);
+        sio.to(newSheet._id.toString()).emit('sheet_info_update', newSheet);
+      })
+      .catch(function (err) {
+        res.json(new DatabaseError(null, null, err.toString()));
+      })
+      
+    })
+    /*
     var revisionId = req.body.revision;
     Revision
     .findById(revisionId).exec(function (err, revision) {
@@ -244,18 +290,21 @@ function setup(app, config, service, io) {
       })
       .then(function () {
         res.json(new SheetSuccess(null, sheet));
+        
+        // notify clients
+        sio.to(sheet._id.toString()).emit('sheet_info_update', sheet.toObject());
       })
       .catch(function (err) {
         res.json(new DatabaseError(null, null, err.toString()));
       })
-    })
+    })*/
   })
 
   app.post('/api/sheet/revision/:sheetId/', getUserJSON, getSheetJSON, function(req, res, next) {
     if(!req.currentSheet) return res.json(new SheetError(null, null, "no such sheet"));
     Sheet.populate(req.currentSheet, {path:"revisions"}, function(err, sheet) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
-      var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser);
+      var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser, null, req.body.comment || null);
       sheet.revisions.push(newRevision);
       console.log(newRevision.comment.by)
       newRevision.save()
@@ -271,6 +320,10 @@ function setup(app, config, service, io) {
           }
         })
         res.json(new SheetSuccess(null, newSheet));
+        
+        console.log('new commit created for sheet ' + newSheet._id.toString());
+        // notify clients
+        sio.to(newSheet._id.toString()).emit('sheet_info_update', newSheet);
       })
       .catch(function (err) {
         res.json(new DatabaseError(null, null, err.toString()));
