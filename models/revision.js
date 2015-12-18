@@ -25,11 +25,11 @@ var RevisionModelFactory = function (mongoose) {
     return deferred.promise;
   }
   
-  revisionSchema.methods.clone = function (user, sheet) {
+  revisionSchema.methods.clone = function (user, sheet, message) {
     return new Revision({
       sheet: sheet || this.sheet,
       data: this.data,
-      comment: {message: "clone of revision " + this._id.toString(), by: user ? user.name : null}
+      comment: {message: message || "clone of revision " + this._id.toString(), by: user ? user.name : null}
     })
   }
   
