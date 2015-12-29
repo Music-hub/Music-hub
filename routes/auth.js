@@ -95,7 +95,7 @@ function setup(app, config, service, io) {
         var sess = req.session;
         console.log(sess, user._id.toString())
         sess.userId = user._id.toString();
-        res.json(new LoginSuccess(strategy.name, user.toClientObject(), null));
+        // res.json(new LoginSuccess(strategy.name, user.toClientObject(), null));
 
         User.populate(user, {path: "sheets"}, function (err, user) {
           if (err) return res.json(new LoginError(strategy.name, null, err.stack));
