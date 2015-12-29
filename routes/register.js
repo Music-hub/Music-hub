@@ -31,12 +31,13 @@ function setup (app ,config, service, io) {
       pendingEmail.refreshToken();
       pendingEmail.pSave()
       .then(function (pendingEmail) {
+        var path = config.siteBase + '?register-token=' + pendingEmail.token
         EmailSender.sendMail({
           from: 'Music Hub <' + config.gmail.GMAIL_ACCOUNT + '>', // sender address
           to: pendingEmail.email, // list of receivers
           subject: '[Register] Music hub, the online music sheet service', // Subject line
-          text: config.siteBase + 'register/email/' + pendingEmail.token, // plaintext body
-          html: '<b>' + config.siteBase + 'register/email/' + pendingEmail.token + '</b>' // html body
+          text: 'please open ' + path +' to continue your register', // plaintext body
+          html: '<b>please open <a href="' + path + '">' + path + '</a> to continue your register</b>' // html body
         }, function(err, info){
           if (err) return res.json(new RegisterError('email', null, err.toString()));
           return res.json(
