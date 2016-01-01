@@ -21,6 +21,7 @@
     "jquery": "~2.1.4",
     "vexflow": "~1.2.36",
     "eventEmitter": "~4.3.0",
-    "qrcode.js": "qrcode-js#*"
+    "qrcode.js": "qrcode-js#*",
+    "MIDI.js": "git@github.com:mudcube/MIDI.js.git#a8a84257afa70721ae462448048a87301fc1554a"
   }
 }
