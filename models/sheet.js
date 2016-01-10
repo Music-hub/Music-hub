@@ -8,6 +8,7 @@ var SheetModelFactory = function (mongoose) {
   
   sheetSchema = new mongoose.Schema({
     forkedFrom: {},
+    description: { type: String, default: '' },
     shortLink: { type: String, default: '' },
     name: { type: String, default: 'A New Sheet' },
     owners: [{type: Schema.Types.ObjectId, ref: 'User' }],

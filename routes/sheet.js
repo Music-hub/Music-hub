@@ -86,7 +86,8 @@ function setup(app, config, service, io) {
           name: req.body.name,
           owners: [user],
           chatChannel: [chatChannel._id],
-          revisions: [revision._id]
+          revisions: [revision._id],
+          description: req.body.description ? req.body.description.toString() : ''
         })
         revision.sheet = sheet._id;
         chatChannel.sheet = sheet._id;
