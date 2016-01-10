@@ -384,6 +384,34 @@ function setup(app, config, service, io) {
     })
   })
   
+  app.post('/api/sheet/remove/:sheetId', getUserJSON, getSheetJSON, function(req, res, next) {
+    if(!req.currentSheet || req.currentUser.anonymous) return res.json(new SheetError(null, null, "something went wrong"));
+    if(0 > req.currentUser.sheets
+      .map(function (i) {return i.toString()})
+      .indexOf(req.currentSheet._id.toString())
+    ) {
+      return res.json(new SheetError(null, null, "something went wrong"));
+    }
+    /*
+    var index = req.currentUser.sheets
+      .map(function (i) {return i.toString()})
+      .indexOf(req.currentSheet._id.toString())
+    
+    var newList = req.currentSheet.sheets.slice(0);
+    newList.splice(index, 1)
+    */
+    
+    req.currentUser.sheets.remove(req.currentSheet._id)
+    req.currentUser.save()
+    .then(function () {
+      res.json(new SheetSuccess(null, {}));
+    })
+    .catch(function (err) {
+      res.json(new DatabaseError(null, null, err.toString()));
+    })
+
+  })
+  
   var sio = io.of('/sheet');
   
   sio.use(function(socket, next) {
