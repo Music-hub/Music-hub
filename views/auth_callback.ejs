@@ -23,7 +23,7 @@
         sameOrigin = false;
       }
       
-      var event = <%- JSON.stringify(event) %>;
+      var event = <%- JSON.stringify(event).replace(/<(\/?\s*s)/ig, '$1"+"s') %>;
       if (caller && !caller.closed && sameOrigin) {
         if (!caller.closed) {
           try {
