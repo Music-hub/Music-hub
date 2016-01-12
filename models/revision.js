@@ -32,6 +32,12 @@ var RevisionModelFactory = function (mongoose) {
       comment: {message: message || "clone of revision " + this._id.toString(), by: user ? user.name : null}
     })
   }
+  revisionSchema.methods.setComment = function (user, message) {
+    this.comment = {
+      message: message || null, 
+      by: user ? user.name : null
+    }
+  }
   
   Revision = mongoose.model('Revision', revisionSchema);
   

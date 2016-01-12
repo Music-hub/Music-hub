@@ -244,10 +244,18 @@ function setup(app, config, service, io) {
       }
       
       if (sheetIndex < 0) return res.json(new SheetError(null, null, "no such revision"));
-      var newRevision = sheet.revisions[sheetIndex].clone(req.currentUser);
+      
+      var headRevision = sheet.revisions[sheet.revisions.length - 1];
+      var newRevision = sheet.revisions[sheetIndex].clone(req.currentUser, null, "Latest");
+      
+      headRevision.setComment(req.currentUser, "backup before reverse to " + (sheet.revisions[sheetIndex].comment.message || revisionId));
+      
       sheet.revisions.push(newRevision);
       
       newRevision.save()
+      .then(function () {
+        return headRevision.save();
+      })
       .then(function () {
         return sheet.save();
       })
@@ -305,10 +313,18 @@ function setup(app, config, service, io) {
     if(!req.currentSheet) return res.json(new SheetError(null, null, "no such sheet"));
     Sheet.populate(req.currentSheet, {path:"revisions"}, function(err, sheet) {
       if (err) return res.json(new DatabaseError(null, null, err.toString()));
-      var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser, null, req.body.comment || null);
+      var headRevision = sheet.revisions[sheet.revisions.length - 1];
+      var newRevision = sheet.revisions[sheet.revisions.length - 1].clone(req.currentUser, null, /*req.body.comment*/ "Latest");
+      
+      headRevision.setComment(req.currentUser, req.body.comment);
+      
       sheet.revisions.push(newRevision);
+      
       console.log(newRevision.comment.by)
       newRevision.save()
+      .then(function () {
+        return headRevision.save();
+      })
       .then(function () {
         return sheet.save();
       })
