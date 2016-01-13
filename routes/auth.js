@@ -104,5 +104,10 @@ function setup(app, config, service, io) {
       }
     );
   })
+  
+  app.post('/logout', function (req, res, next) {
+    delete req.session.userId;
+    res.json(new LoginSuccess(null, null, "logout successfully"));
+  })
 }
 module.exports = setup;
