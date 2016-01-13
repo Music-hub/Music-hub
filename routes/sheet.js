@@ -370,6 +370,7 @@ function setup(app, config, service, io) {
       });
       var sheet = new Sheet({
         name: oldSheet.name,
+        description: oldSheet.description,
         owners: [req.currentUser],
         chatChannel: chatChannel._id,
         revisions: oldSheet.revisions.map(function (revision) {
